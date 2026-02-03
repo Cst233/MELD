@@ -18,7 +18,7 @@ The teacher inference stage generates zero-shot predictions from multiple LLMs. 
 
 <div align=center> <img src="assets/teacher_inference.png" width = 80%/> </div>
 
-<div style="height: 10px;"></div>
+<div style="height: 20px;"></div>
 
 **Student Model Distillation & Deployment** (`new_exp.py`)
 
