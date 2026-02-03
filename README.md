@@ -16,7 +16,7 @@
 
 The teacher inference stage generates zero-shot predictions from multiple LLMs. It supports both local inference (vLLM, HuggingFace) and API-based inference (OpenAI), producing diverse semantic predictions for subsequent aggregation.
 
-<div align=center> <img src="assets/teacher_inference.png" width = 80%/> </div>
+<div align=center> <img src="assets/teacher_inference.png" width = 83%/> </div>
 
 <div style="height: 20px;"></div>
 
@@ -24,7 +24,7 @@ The teacher inference stage generates zero-shot predictions from multiple LLMs. 
 
 The distillation stage aggregates teacher predictions via EM Algorithm, then trains lightweight student models on the generated hard labels, enabling efficient deployment without LLM dependency.
 
-<div align=center> <img src="assets/ues_deployment.png" width = 95%/> </div>
+<div align=center> <img src="assets/ues_deployment.png" width = 98%/> </div>
 
 ---
 
