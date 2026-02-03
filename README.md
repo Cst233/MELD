@@ -44,7 +44,7 @@ The distillation stage aggregates teacher predictions via EM Algorithm, then tra
 
 | Module | Purpose |
 |:-------|:--------|
-| **`create_external_datasets.py`** | Raw data loading, initial cleaning, and train/validation/test splitting |
+| **`create_external_datasets.py`** | Raw data loading, initial cleaning, and train/test splitting |
 | **`evaluate_external_dataset.py`** | Feature engineering and preprocessing (One-Hot/Ordinal encoding, normalization) |
 | **`dataset_process.py`** | LLM response parsing utilities (mapping unstructured text to class labels) |
 | **`template.py`** | Prompt template definitions for Zero-Shot classification |
@@ -68,8 +68,8 @@ To facilitate reproducibility and skip the computationally expensive LLM inferen
 ## 🔧 Setup
 
 **1. Clone the Repository**
+
 ```bash
-git clone https://github.com/yourusername/MELD.git
 cd MELD
 ```
 
