@@ -1,4 +1,4 @@
-template_0shot =  """You are a helpful data analyst. I'll give you a tabular dataset's task description, features, label classes from which you will make classification prediction for new instance. No analyzing, directly give the prediction answer which is only word in your response, there can only be one category of prediction.
+template_0shot =  """You are a helpful data analyst. I'll give you a tabular dataset's task description, features, and label classes from which you will make a classification prediction for a new instance. No analyzing, directly give the prediction answer, which is only words in your response, there can only be one category of prediction.
 
 Task description: ${task_description}
 Features: ${features}
