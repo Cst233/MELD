@@ -665,7 +665,10 @@ if __name__ == "__main__":
     
     for seed in SEEDS:
         print(f"\n==================== Seed {seed} ====================")
-        ml_model_list, model_weights = run_distillation_process(args.method, seed) 
+        if method != '0shot':
+            ml_model_list, model_weights = train_for_guidance(method, seed) 
+        else:
+            ml_model_list, model_weights = [], []
 
         if args.method in ['ours', 'snorkel']:
             if isinstance(model_weights, np.ndarray):

@@ -1,28 +1,28 @@
-# MELD: Distilling LLM Zero-Shot Priors into Heterogeneous Efficient Models for Label-Free Tabular Classification
+# MELD: Distilling Zero-Shot Priors of LLMs into Efficient Heterogeneous Models for Tabular Classification
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
 
-**Official implementation of "MELD: Distilling Zero-Shot Semantic Priors into Heterogeneous Efficient Models for Label-Free Tabular Classification".**
+**Official implementation of "MELD: Distilling Zero-Shot Priors of LLMs into Efficient Heterogeneous Models for Tabular Classification".**
 
 ---
 
 ## 📖 Overview
-**MELD** (**M**odel-**E**nsemble via **L**abel-free **D**istillation) **resolves** the issues of prediction instability and high resource overhead in **Label-Free Tabular Classification** by harnessing the semantic reasoning capabilities of Large Language Models in a zero-shot setting. The framework aggregates LLM predictions using an Unsupervised Estimation Selector and distills this knowledge into efficient, heterogeneous downstream models such as CatBoost and Logistic Regression.
+**MELD** (**M**odel-**E**nsemble via **L**abel-free **D**istillation) **resolves** the issues of prediction reliability and inconsistency in **Label-Free Tabular Classification** by harnessing the zero-shot reasoning capabilities of Large Language Models. The framework filters LLM experts using an Unsupervised Estimation Selector and distills their knowledge into efficient heterogeneous downstream models such as CatBoost and Logistic Regression.
 
 ### Framework Architecture
 
 **LLM Teacher Inference** (`save_prediction.py`)
 
-The teacher inference stage generates zero-shot predictions from multiple LLMs. It supports both local inference (vLLM, HuggingFace) and API-based inference (OpenAI), producing diverse semantic predictions for subsequent aggregation.
+The teacher inference stage generates zero-shot predictions from multiple LLMs. It supports both local inference (vLLM, HuggingFace) and API-based inference (OpenAI), producing diverse semantic predictions for subsequent filtering.
 
 <div align=center> <img src="assets/teacher_inference.png" width = 83%/> </div>
 
 <div style="height: 20px;"></div>
 
-**Student Model Distillation & Deployment** (`new_exp.py`)
+**Unsupervised Expert Selection, Distillation & Deployment** (`new_exp.py`)
 
-The distillation stage aggregates teacher predictions via EM Algorithm, then trains lightweight student models on the generated hard labels, enabling efficient deployment without LLM dependency.
+The UES module estimates teacher reliability via an improved EM algorithm and filters experts based on their weights. Only the selected experts undergo distillation to train lightweight student models. During deployment, students are ensembled via majority voting for efficient inference without LLM dependency.
 
 <div align=center> <img src="assets/ues_deployment.png" width = 98%/> </div>
 
@@ -36,8 +36,8 @@ The distillation stage aggregates teacher predictions via EM Algorithm, then tra
 |:-------|:---------|
 | **`serial.py`** | **Data Serialization** — Converts tabular data into textual prompts optimized for LLMs, handling feature binning, schema descriptions, and prompt construction. |
 | **`save_prediction.py`** | **Teacher Inference Interface** — Generates and saves zero-shot predictions/probabilities from various LLMs (Llama-3, Qwen, GPT-4o, etc.) using local inference (vLLM/HuggingFace) or API calls (OpenAI). |
-| **`new_exp.py`** | **Distillation Engine** — Implements the core MELD logic:<br>• Aggregates LLM votes using EM Algorithm<br>• Trains student models (CatBoost/LR) on hard labels<br>• Evaluates performance metrics (Accuracy/F1) |
-| **`test.sh`** | **Pipeline Controller** — Master automation script that orchestrates the complete workflow: gathering LLM predictions, executing zero-shot baselines, and running MELD distillation. |
+| **`new_exp.py`** | **Selective Distillation Engine** — Implements the core MELD logic:<br>• Estimates teacher reliability using improved EM Algorithm<br>• Filters experts based on estimated weights<br>• Trains student models (CatBoost/LR) on selected experts' hard labels<br />• Evaluates performance metrics (Accuracy/F1) |
+| **`test.sh`** | **Pipeline Controller** — Master automation script that orchestrates the complete workflow: gathering LLM predictions, executing zero-shot baselines, and running MELD. |
 
 
 ### 🛠️ Data Utilities (`data_util/`)
@@ -53,7 +53,7 @@ The distillation stage aggregates teacher predictions via EM Algorithm, then tra
 
 | File | Content |
 |:-----|:--------|
-| **`external_datasets_variables.py`** | Dataset metadata including feature descriptions, role prompts, label mappings, and semantic integrity rules |
+| **`external_datasets_variables.py`** | Dataset metadata including feature descriptions, role prompts, label mappings, and so on. |
 
 ### 📊 Pre-computed Results & Inference
 
@@ -61,7 +61,7 @@ To facilitate reproducibility and skip the computationally expensive LLM inferen
 
 | Directory | Content |
 |:-------|:--------|
-| **`pkls/5bin_0_shot_prompt/`** | Contains the raw zero-shot inference results from **10 different LLMs** (including Qwen2.5, Llama-3.1, GPT-4o-mini, etc.) across benchmark datasets. `new_exp.py` uses these files as input. |
+| **`pkls/5bin_0_shot_prompt/`** | Contains the raw zero-shot classification results from **10 different LLMs** (including Qwen2.5, Llama-3.1, GPT-4o-mini, etc.) on *Heart* datasets. `new_exp.py` uses these files as input. |
 | **`meld_results/`** | Stores the final classification results of the distilled student models (Logistic Regression and CatBoost/GBDT). |
 ---
 
