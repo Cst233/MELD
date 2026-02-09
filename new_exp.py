@@ -20,7 +20,7 @@ from tqdm import tqdm
 from data_util.create_external_datasets import load_train_validation_test
 from data_util.evaluate_external_dataset import prepare_data, read_orig_dataset
 from data_util.dataset_process import LABEL_2_TARGET, TARGET_2_LABEL, target_2_label
-from data_util.template import template_probability, template_0shot
+from data_util.template import template_0shot
 
 # Suppress warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -105,7 +105,7 @@ def create_template_dataset(serial_dataset, seed):
     new_train = concatenate_datasets([datasets['train'], datasets['valid']])
     datasets['train'] = new_train
 
-    template = Template(template_probability)
+    template = Template(template_0shot)
     
     def apply_template(ex):
         return {
@@ -665,8 +665,8 @@ if __name__ == "__main__":
     
     for seed in SEEDS:
         print(f"\n==================== Seed {seed} ====================")
-        if method != '0shot':
-            ml_model_list, model_weights = train_for_guidance(method, seed) 
+        if args.method != '0shot':
+            ml_model_list, model_weights = run_distillation_process(args.method, seed) 
         else:
             ml_model_list, model_weights = [], []
 

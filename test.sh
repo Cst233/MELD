@@ -30,14 +30,14 @@
 # Note: 'distill_mode' defaults to 'ensemble' here.
 
 for ml_model in "lr" "catboost"; do
-    for dataset in 'heart' 'diabetes' 'blood' 'calhousing' 'car' 'student' 'employee' 'jungle' 'health' 'bank' 'income'; do
+    for dataset in 'heart'; do
         for voting in "expert_simple"; do
             python new_exp.py \
                 --method "ours" \
                 --datafile "$dataset" \
                 --ml_model "$ml_model" \
                 --auto_temp \
-                --voting $voting \
+                --voting $voting
         done
     done
 done
@@ -53,13 +53,13 @@ done
 
 # for model in "Llama-3.1-8B-Instruct" "Qwen2.5-7B-Instruct" "Qwen2.5-14B-Instruct" "Qwen3-14B" "Qwen3-8B" "Ministral-8B-it" 'gemma-2-9b-it' "gemma-3-12b-it" "phi4" "gpt-4o-mini"; do 
 #     for ml_model in "lr" "catboost"; do
-#         for dataset in 'heart' 'diabetes' 'blood' 'calhousing' 'car' 'student' 'employee' 'jungle' 'health' 'bank' 'income'; do
+#         for dataset in 'heart' ; do
             # python new_exp.py \
             #     --method "ours" \
             #     --datafile "$dataset" \
             #     --ml_model "$ml_model" \
             #     --model $model \
-            #     --distill_mode single \
+            #     --distill_mode single
 #         done
 #     done
 # done
