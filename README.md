@@ -8,7 +8,7 @@
 ---
 
 ## 📖 Overview
-**MELD** (**M**odel-**E**nsemble via **L**abel-free **D**istillation) **resolves** the issues of prediction reliability and inconsistency in **Label-Free Tabular Classification** by harnessing the zero-shot reasoning capabilities of Large Language Models. The framework filters LLM experts using an Unsupervised Estimation Selector and distills their knowledge into efficient heterogeneous downstream models such as CatBoost and Logistic Regression.
+**MELD** (**M**odel-**E**nsemble via **L**abel-free **D**istillation) **resolves** the issues of prediction reliability and inconsistency in **Label-Free Tabular Classification** by harnessing the zero-shot reasoning capabilities of Large Language Models. The framework filters LLM experts using Iterative Consensus Reweighting (ICR) and distills their knowledge into efficient heterogeneous downstream models such as CatBoost and Logistic Regression.
 
 ### Framework Architecture
 
@@ -20,11 +20,11 @@ The teacher inference stage generates zero-shot predictions from multiple LLMs. 
 
 <div style="height: 20px;"></div>
 
-**Unsupervised Expert Selection, Distillation & Deployment** (`new_exp.py`)
+**ICR-based Teacher Filtering, Distillation & Deployment** (`new_exp.py`)
 
-The UES module estimates teacher reliability via an improved EM algorithm and filters experts based on their weights. Only the selected experts undergo distillation to train lightweight student models. During deployment, students are ensembled via majority voting for efficient inference without LLM dependency.
+The ICR module computes consensus-derived teacher scores via weighted consensus and class-balanced agreement, then filters experts based on their scores. Only the selected experts undergo distillation to train lightweight student models. During deployment, students are ensembled via majority voting for efficient inference without LLM dependency.
 
-<div align=center> <img src="assets/ues_deployment.png" width = 98%/> </div>
+<div align=center> <img src="assets/icr_deployment.png" width = 98%/> </div>
 
 ---
 
@@ -36,7 +36,7 @@ The UES module estimates teacher reliability via an improved EM algorithm and fi
 |:-------|:---------|
 | **`serial.py`** | **Data Serialization** — Converts tabular data into textual prompts optimized for LLMs, handling feature binning, schema descriptions, and prompt construction. |
 | **`save_prediction.py`** | **Teacher Inference Interface** — Generates and saves zero-shot predictions/probabilities from various LLMs (Llama-3, Qwen, GPT-4o, etc.) using local inference (vLLM/HuggingFace) or API calls (OpenAI). |
-| **`new_exp.py`** | **Selective Distillation Engine** — Implements the core MELD logic:<br>• Estimates teacher reliability using improved EM Algorithm<br>• Filters experts based on estimated weights<br>• Trains student models (CatBoost/LR) on selected experts' hard labels<br />• Evaluates performance metrics (Accuracy/F1) |
+| **`new_exp.py`** | **Selective Distillation Engine** — Implements the core MELD logic:<br>• Computes consensus-derived teacher scores using ICR<br>• Filters experts based on ICR scores<br>• Trains student models (CatBoost/LR) on selected experts' hard labels<br />• Evaluates performance metrics (Accuracy/F1) |
 | **`test.sh`** | **Pipeline Controller** — Master automation script that orchestrates the complete workflow: gathering LLM predictions, executing zero-shot baselines, and running MELD. |
 
 

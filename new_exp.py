@@ -257,12 +257,12 @@ def prepare_data_matrices(seed, split, bin_count):
     
     return None
 
-# ================= Algorithms: EM & Dawid-Skene =================
+# ================= Algorithms: ICR-style Scoring & Dawid-Skene =================
 
 def dawid_skene_algorithm(L, n_classes, max_iter=100, tol=1e-4):
     """
-    Dawid-Skene algorithm implementation.
-    Estimates the confusion matrix provided by each model and returns Expected Accuracy as weights.
+    Dawid-Skene baseline implementation.
+    Estimates each model's confusion matrix and returns expected accuracy as weights.
     """
     N, K = L.shape
     if K == 1:
@@ -284,7 +284,7 @@ def dawid_skene_algorithm(L, n_classes, max_iter=100, tol=1e-4):
     for _ in range(max_iter):
         prev_T_z = T_z.copy()
         
-        # M-Step
+        # Update model confusion estimates.
         class_priors = T_z.sum(axis=0) / N
         for k in range(K):
             for j in range(n_classes):
@@ -297,7 +297,7 @@ def dawid_skene_algorithm(L, n_classes, max_iter=100, tol=1e-4):
             cm_row_sums = pi[k].sum(axis=1, keepdims=True)
             pi[k] = np.divide(pi[k], cm_row_sums, out=np.ones_like(pi[k])/n_classes, where=cm_row_sums>0)
 
-        # E-Step
+        # Update posterior class distribution.
         new_T_z = np.zeros((N, n_classes))
         log_priors = np.log(class_priors + 1e-9)
         log_pi = np.log(pi + 1e-9)
@@ -330,7 +330,7 @@ def dawid_skene_algorithm(L, n_classes, max_iter=100, tol=1e-4):
 
 def em_algorithm(L, n_classes, max_iter=20, temperature=0.1, metric='f1', tol=1e-4):
     """
-    EM Algorithm to optimize Latent Truth estimates based on Macro-F1 or Accuracy.
+    ICR-style fixed-point scoring routine for consensus-derived teacher weights.
     """
     N, K = L.shape
     if K == 1:
@@ -341,7 +341,7 @@ def em_algorithm(L, n_classes, max_iter=20, temperature=0.1, metric='f1', tol=1e
     for i in range(max_iter):
         prev_weights = weights.copy()
 
-        # E-Step: Estimate latent truth probability q(z)
+        # Consensus construction: build weighted vote distribution q(z).
         q = np.zeros((N, n_classes))
         for c in range(n_classes):
             match_c = (L == c)
@@ -350,7 +350,7 @@ def em_algorithm(L, n_classes, max_iter=20, temperature=0.1, metric='f1', tol=1e
         row_sums = q.sum(axis=1, keepdims=True)
         q = np.divide(q, row_sums, out=np.zeros_like(q), where=row_sums > 0)
         
-        # M-Step: Update model weights based on q(z)
+        # Teacher scoring: update consensus-aligned model scores from q(z).
         pi = np.zeros(K)
         true_counts = q.sum(axis=0) 
         true_counts[true_counts == 0] = 1e-8
@@ -456,7 +456,7 @@ def auto_tune_em_temperature(L_matrix, n_label, metric='f1', max_iter=20):
 def run_distillation_process(method, seed):
     """
     Main controller for the distillation process.
-    Iterates through teacher models, creates student models, and weights them via EM/DS.
+    Iterates through teacher models, creates student models, and scores them via ICR/DS.
     """
     if method == "snorkel":
         # === Snorkel Baseline ===
@@ -555,7 +555,7 @@ def run_distillation_process(method, seed):
             
             valid_model_indices.append(idx)
 
-            # --- 2. Collect Predictions for EM ---
+            # --- 2. Collect Predictions for ICR ---
             current_model_preds_int = []
             for pred, _ in all_preds:
                 if pred in TARGET_2_LABEL[DATASET_NAME]:
@@ -587,7 +587,7 @@ def run_distillation_process(method, seed):
             ml_model.inv_label_map = {v: k for k, v in label_map.items()} if label_map else None
             ml_model_list.append(ml_model)
 
-        # --- Weight Calculation (EM/DS/Voting) ---
+        # --- Weight Calculation (ICR/DS/Voting) ---
         L_matrix = np.array(teacher_preds_collection).T 
         if len(teacher_preds_collection) == 0:
              return [None]*len(teacher_models), np.zeros(len(teacher_models))
@@ -601,7 +601,7 @@ def run_distillation_process(method, seed):
             model_weights = full_weights
             
         else:
-            # Latent Truth Estimation
+            # Consensus-derived teacher scoring
             metric = 'acc' if args.voting == 'acc_weighted' else 'f1' 
             
             if args.voting in ['ds', 'expert_ds']:
@@ -626,7 +626,7 @@ def run_distillation_process(method, seed):
             if np.sum(full_weights) > 0:
                 full_weights = full_weights / np.sum(full_weights)
 
-            # --- Expert Selection (Mean Filter) ---
+            # --- ICR Teacher Filtering (Mean Filter) ---
             if args.voting in ['expert_simple', 'expert_ds']:
                 mean_w = np.mean(valid_weights)
                 
